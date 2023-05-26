@@ -1,8 +1,5 @@
-Sure! Here's the README written in Markdown format:
 
-# Project Name
-
-DockProxy
+# CloudBox
 
 ## Overview
 
