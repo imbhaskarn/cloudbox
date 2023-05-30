@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+  web:
+    container_name: cloudboxui
+    build: 
+      context: ./
+    command: yarn start
+    # networks:
+    #   - cloudbox
+    network_mode: host
+
+  traefik:
+    image: traefik:2.3
+    network_mode: host
+    command:
+      # https://doc.traefik.io/traefik/v2.3/reference/static-configuration/cli/
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.http.endpoint=http://localhost:3000/api/traefik"
+      - "--providers.http.pollInterval=5s"
+
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--entrypoints.database.address=:3306"
+
+      - "--accesslog"
+      - "--global.checkNewVersion=true"
+      - "--global.sendAnonymousUsage=false"
+      - "--serversTransport.insecureSkipVerify=true"
+      - "--api.insecure=true"
+      - "--api.debug=true"
+      - "--api.dashboard=true"
+      - "--certificatesResolvers.letsencrypt.acme.email=imbhaskaran@gmail.com"
+      - "--certificatesResolvers.letsencrypt.acme.storage=/acme/acme-tls.json"
+      - "--certificatesResolvers.letsencrypt.acme.tlsChallenge"
+    # networks:
+    #   - cloudbox
+    volumes:
+      # SSL certificates
+      - ./acme:/acme
+    # ports:
+    #   - 8080:8080
+    #   - 80:80
+    #   - 3000:3000
+    depends_on:
+      - web
+# networks:
+#   cloudbox:
