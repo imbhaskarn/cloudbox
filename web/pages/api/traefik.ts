@@ -5,8 +5,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     http: {
       routers: {
         traefik: {
-          entryPoints: ["https"],
-          rule: "Host(`portal.codewiser.online`)",
+          entryPoints: ["http"],
+          rule: "Host(`portal.localhost`)",
           service: "traefik",
         },
       },
