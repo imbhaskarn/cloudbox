@@ -1,5 +1,14 @@
 version: '3.8'
 services:
+  mongo:
+    container_name: cloudbox_db
+    image: postgres:latest
+    restart: always
+    network_mode: host
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+
   web:
     container_name: cloudboxui
     build: 
@@ -8,9 +17,12 @@ services:
     # networks:
     #   - cloudbox
     network_mode: host
+    depends_on:
+      - mongo
 
   traefik:
-    image: traefik:2.3
+    container_name: traefik
+    image: traefik:latest
     network_mode: host
     command:
       # https://doc.traefik.io/traefik/v2.3/reference/static-configuration/cli/
@@ -21,7 +33,6 @@ services:
 
       - "--entrypoints.http.address=:80"
       - "--entrypoints.https.address=:443"
-      - "--entrypoints.database.address=:3306"
 
       - "--accesslog"
       - "--global.checkNewVersion=true"
@@ -30,9 +41,10 @@ services:
       - "--api.insecure=true"
       - "--api.debug=true"
       - "--api.dashboard=true"
-      - "--certificatesResolvers.letsencrypt.acme.email=imbhaskaran@gmail.com"
-      - "--certificatesResolvers.letsencrypt.acme.storage=/acme/acme-tls.json"
-      - "--certificatesResolvers.letsencrypt.acme.tlsChallenge"
+      - "--certificatesResolvers.https"
+      - "--certificatesResolvers.https.acme.email=imbhaskaran@gmail.com"
+      - "--certificatesResolvers.https.acme.storage=/acme/acme.json"
+      - "--certificatesResolvers.https.acme.tlsChallenge"
     # networks:
     #   - cloudbox
     volumes:
