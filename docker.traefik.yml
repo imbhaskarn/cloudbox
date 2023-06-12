@@ -49,6 +49,6 @@ volumes:
   traefik-public-certificates:
   dynamic-config:
 
-# networks:
-#   cloudbox:
-#     external: true
+networks:
+  cloudbox:
+    external: true
