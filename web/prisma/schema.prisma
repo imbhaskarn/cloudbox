@@ -10,21 +10,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+   id              Int           @id @default(autoincrement())
+  name            String?
+  username        String?
+  password        String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+
+
 // schema.prisma
 
 model Service {
-  id        Int      @id @default(autoincrement())
-  name      String
-  router    Routers  @relation(fields: [id], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              Int           @id @default(autoincrement())
+  name            String         ?
+  router          Routers       @relation(fields: [id], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime      @updatedAt
+  loadbalancer    Loadbalancers @relation(fields: [loadbalancersId], references: [id])
+  loadbalancersId Int
 }
 
 model Routers {
   id          Int      @id @default(autoincrement())
-  name        String
+  name        String?
   entryPoints String
-  rule        String
+  rule        String?
   service     Service?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -32,7 +45,7 @@ model Routers {
 
 model Middlewares {
   id        Int      @id @default(autoincrement())
-  name      String
+  name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -42,6 +55,7 @@ model Middlewares {
 model Loadbalancers {
   id      Int       @id @default(autoincrement())
   servers Servers[]
+  Service Service[]
 }
 
 model Servers {
