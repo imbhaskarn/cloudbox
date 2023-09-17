@@ -14,7 +14,7 @@
 
 # production
 /build
-/acme
+
 # misc
 .DS_Store
 *.pem

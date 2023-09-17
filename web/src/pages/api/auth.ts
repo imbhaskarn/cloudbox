@@ -21,8 +21,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   // such as checking the username and password against a database.
 
   // For demonstration purposes, we'll use a hardcoded username and password.
-  const validEmail = "admin";
-  const validPassword = "password";
+  const validEmail = "admin@mail.com";
+  const validPassword = "Password@123";
 
   // Compare the provided username and password with the valid ones.
   const isValidCredentials = validEmail === email && validPassword === password;
@@ -33,9 +33,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   // If the credentials are valid, generate a JWT token.
-  const token = jwt.sign({ email }, process.env.JWT_SECRET, {
+  const accessToken = jwt.sign({ email }, process.env.JWT_SECRET, {
     expiresIn: "1d",
   });
-  return res.status(200).json({ name, email, password });
+  return res.status(200).json({ result: "success",  accessToken } );
 };
 export default handler;
