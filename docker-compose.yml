@@ -13,10 +13,10 @@ services:
     container_name: cloudboxui
     build: 
       context: ./
-    command: yarn start
+
     # networks:
     #   - cloudbox
-    network_mode: host
+
     depends_on:
       - mongo
 
