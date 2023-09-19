@@ -1,33 +1,85 @@
 services:
+  cloudbox-web:
+    container_name: cloudboxui
+    build:
+      context: ./web
+    labels:
+      # Enable Traefik for this specific "backend" service
+      - traefik.enable=true
+      # Define the port inside of the Docker service to use
+      - traefik.http.services.cloudbox.loadbalancer.server.port=3000
+      # Make Traefik use this domain in HTTP
+      - traefik.http.routers.cloudbox-http.entrypoints=http
+      - traefik.http.routers.cloudbox-http.rule=Host(`cloudbox.ibhaskar.com`)
+      # Use the traefik-public network (declared below)
+      # Make Traefik use this domain in HTTPS
+      - traefik.http.routers.cloudbox-https.entrypoints=https
+      - traefik.http.routers.cloudbox-https.rule=Host(`cloudbox.ibhaskar.com`)
+      - traefik.http.routers.cloudbox-https.tls=true
+      # Use the "le" (Let's Encrypt) resolver
+      - traefik.http.routers.cloudbox-https.tls.certresolver=myresolver
+      # https-redirect middleware to redirect HTTP to HTTPS
+      - traefik.http.middlewares.cloudbox-https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.cloudbox-https-redirect.redirectscheme.permanent=true
+      # Middleware to redirect HTTP to HTTPS
+      - traefik.http.routers.cloudbox-http.middlewares=https-redirect
+      #- traefik.http.routers.app-https.middlewares=admin-auth
+      - traefik.docker.network=cloudbox
+    networks:
+      - cloudbox
+
   traefik:
+    depends_on:
+      - cloudbox-web
     image: traefik:latest
-    # ports:
-    #   - 80:80
-    #   - 443:443
+    ports:
+      - 80:80
+      - 443:443
     restart: always
-    network_mode: host
-    
-    volumes:
-      - traefik-public-certificates:/certificates
-      - dynamic-config:/etc/traefik/dynamic
+    # network_mode: host
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.traefik-dashboard.loadbalancer.server.port=80
+      # https to https redirect
+      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+      # create middlewares
+      - traefik.http.routers.traefik-dashboard-http.middlewares=https-redirect
+      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+      ## configure http
+      - traefik.http.routers.traefik-dashboard-http.entrypoints=http
+      - traefik.http.routers.traefik-dashboard-http.rule=Host(`traefik.ibhaskar.com`)
+      ## configure https
+      - traefik.http.routers.traefik-dashboard-https.entrypoints=https
+      - traefik.http.routers.traefik-dashboard-https.tls.certresolver=myresolver
+      - traefik.http.routers.traefik-dashboard-https.rule=Host(`traefik.ibhaskar.com`)
+      - traefik.http.routers.traefik-dashboard-https.service=api@internal
+      - traefik.http.routers.traefik-dashboard-https.tls=true
+      - traefik.docker.network=cloudbox
 
     command:
+      - --providers.docker
       - --providers.file.directory=/etc/traefik/dynamic # Specify directory for dynamic configuration
-      - --providers.http  # Enable HTTP provider
-      - --providers.http.endpoint=http://128.199.30.61:3000/api/traefik
-      - --api.insecure=true
-      - --entrypoints.http.address=:8081
+      - --providers.http # Enable HTTP provider
+      - --providers.http.endpoint=https://cloudbox.ibhaskar.com/api/traefik
+      - --providers.http.PollInterval=5s
+      - --api.insecure=false
+      - --entrypoints.http.address=:80
       - --entrypoints.https.address=:443 # https
+      # create cert resolver and challange
       - --certificatesresolvers.myresolver.acme.email=imbhaskaran@gmail.com # https
       - --certificatesresolvers.myresolver.acme.storage=/certificates/acme.json #ssl certificate storage
       - --certificatesresolvers.myresolver.acme.httpChallenge.entryPoint=http
-
-
+      - --tracing.serviceName=traefik
+      - --tracing.datadog=true
       - --accesslog
-      - --log
+      - --log.level=DEBUG
       - --api
-    # networks:
-      # - cloudbox
+    volumes:
+      - traefik-public-certificates:/certificates
+      - dynamic-config:/etc/traefik/dynamic
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - cloudbox
 volumes:
   traefik-public-certificates:
   dynamic-config:
