@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-
+import prisma from "@/prisma";
 export const GET = async (req: NextRequest, res: NextResponse) => {
+
   const data = {
     http: {
       routers: {
@@ -48,25 +49,25 @@ export const GET = async (req: NextRequest, res: NextResponse) => {
         },
       },
     },
-    // certificatesResolvers: {
-    //   myresolver: {
-    //     acme: {
-    //       email: "imbhaskaran@gmail.com", // Replace with your email
-    //       storage: "acme.json", // Store certificates in acme.json file
-    //       httpChallenge: {
-    //         entryPoint: "web",
-    //       },
-    //     },
-    //   },
-    // },
-    // entryPoints: {
-    //   http: {
-    //     address: ":80",
-    //   },
-    //   https: {
-    //     address: ":443",
-    //   },
-    // },
+    certificatesResolvers: {
+      myresolver: {
+        acme: {
+          email: "imbhaskaran@gmail.com", // Replace with your email
+          storage: "acme.json", // Store certificates in acme.json file
+          httpChallenge: {
+            entryPoint: "web",
+          },
+        },
+      },
+    },
+    entryPoints: {
+      http: {
+        address: ":80",
+      },
+      https: {
+        address: ":443",
+      },
+    },
   };
 
   return new NextResponse(JSON.stringify({ http: data.http }), {
